@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ClimateAI — Intelligent Climate Intelligence Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Lato:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0f1e;
+      --surface: #111827;
+      --surface2: #1a2540;
+      --accent: #00e5ff;
+      --accent2: #00ff99;
+      --accent3: #ff6b35;
+      --text: #e8f4f8;
+      --muted: #6b8fa3;
+      --border: rgba(0,229,255,0.15);
+      --glow: 0 0 30px rgba(0,229,255,0.2);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Lato', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 20%, rgba(0,229,255,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 80% 80%, rgba(0,255,153,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(255,107,53,0.03) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Grid overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 40px;
+      background: rgba(10,15,30,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      letter-spacing: -0.5px;
+    }
+
+    .logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--accent); }
+
+    .nav-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent2);
+      border: 1px solid var(--accent2);
+      padding: 5px 12px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      padding: 80px 40px 60px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .hero-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--accent);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hero-tag::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -1.5px;
+      margin-bottom: 24px;
+    }
+
+    h1 em {
+      font-style: normal;
+      color: var(--accent);
+      position: relative;
+    }
+
+    .hero-sub {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 560px;
+      line-height: 1.7;
+      margin-bottom: 40px;
+      font-weight: 300;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 14px 28px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+      box-shadow: 0 0 20px rgba(0,229,255,0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 40px rgba(0,229,255,0.5);
+    }
+
+    .btn-secondary {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      padding: 14px 28px;
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      max-width: 1200px;
+      margin: 0 auto 60px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+
+    .stat-card:hover { background: var(--surface2); }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .stat-card:hover::before { opacity: 1; }
+
+    .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    .stat-value.green { color: var(--accent2); }
+    .stat-value.cyan { color: var(--accent); }
+    .stat-value.orange { color: var(--accent3); }
+
+    .stat-change {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .stat-change.up { color: var(--accent2); }
+    .stat-change.down { color: #ff4d6d; }
+
+    /* ── MAIN GRID ── */
+    .main-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 40px 60px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title span {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--accent);
+      letter-spacing: 2px;
+    }
+
+    /* ── AI PREDICTION FORM ── */
+    .form-section { grid-column: 1; }
+
+    .input-group {
+      margin-bottom: 18px;
+    }
+
+    .input-group label {
+      display: block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .input-group input,
+    .input-group select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .input-group input:focus,
+    .input-group select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,229,255,0.08);
+    }
+
+    .input-group select option { background: var(--surface); }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* ── RESULT BOX ── */
+    .result-box {
+      margin-top: 24px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .result-box.visible { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .result-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--accent2);
+      letter-spacing: -1px;
+    }
+
+    .result-detail {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 8px;
+      line-height: 1.6;
+    }
+
+    .risk-badge {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 1.5px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-top: 10px;
+    }
+
+    .risk-low  { background: rgba(0,255,153,0.1); color: var(--accent2); border: 1px solid rgba(0,255,153,0.3); }
+    .risk-mid  { background: rgba(255,200,0,0.1);  color: #ffc800;       border: 1px solid rgba(255,200,0,0.3); }
+    .risk-high { background: rgba(255,107,53,0.1); color: var(--accent3); border: 1px solid rgba(255,107,53,0.3); }
+
+    /* ── SIDEBAR ── */
+    .sidebar { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Live indicators */
+    .live-dot {
+      width: 7px; height: 7px;
+      background: var(--accent2);
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    /* Metric rows */
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .metric-row:last-child { border-bottom: none; }
+
+    .metric-name {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .metric-val {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    /* Mini bar */
+    .mini-bar-wrap {
+      margin-top: 16px;
+    }
+
+    .mini-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .mini-bar-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      width: 80px;
+      flex-shrink: 0;
+    }
+
+    .mini-bar-track {
+      flex: 1;
+      height: 4px;
+      background: var(--bg);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .mini-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .mini-bar-pct {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--accent);
+      width: 34px;
+      text-align: right;
+    }
+
+    /* Chart placeholder */
+    .chart-area {
+      height: 120px;
+      background: var(--bg);
+      border-radius: 8px;
+      margin-top: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chart-svg { width: 100%; height: 100%; }
+
+    /* ── FOOTER STRIP ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    footer p {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    footer p span { color: var(--accent); }
+
+    /* ── LOADING STATE ── */
+    .loading-bar {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 2px;
+      margin-top: 16px;
+      display: none;
+    }
+
+    .loading-bar.active { display: block; }
+
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position:  200% 0; }
+    }
+
+    /* ── ANIMATIONS ── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(24px);
+      animation: fadeUp 0.6s ease forwards;
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-up:nth-child(1) { animation-delay: 0.05s; }
+    .fade-up:nth-child(2) { animation-delay: 0.12s; }
+    .fade-up:nth-child(3) { animation-delay: 0.19s; }
+    .fade-up:nth-child(4) { animation-delay: 0.26s; }
+
+    @media (max-width: 900px) {
+      .main-grid { grid-template-columns: 1fr; padding: 0 20px 40px; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      nav { padding: 16px 20px; }
+      .hero { padding: 50px 20px 40px; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">Climate<span>AI</span></div>
+    <ul class="nav-links">
+      <li><a href="#">Dashboard</a></li>
+      <li><a href="#">Predictions</a></li>
+      <li><a href="#">Reports</a></li>
+      <li><a href="#">About</a></li>
+    </ul>
+    <div class="nav-badge">⬡ LIVE MODEL</div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-tag">IIIT Lucknow · Gen AI Hackathon 2025</div>
+    <h1>Climate Intelligence<br/>Powered by <em>AI</em></h1>
+    <p class="hero-sub">
+      Real-time environmental analysis and predictive modelling for smarter climate decisions. Enter parameters below to get an instant AI-generated forecast.
+    </p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.getElementById('predict-form').scrollIntoView({behavior:'smooth'})">Run Prediction ↓</button>
+      <button class="btn-secondary" onclick="alert('GitHub link coming soon!')">View Source Code</button>
+    </div>
+  </section>
+
+  <!-- STATS ROW -->
+  <div class="stats-row" style="position:relative;z-index:1;margin:0 40px 40px;max-width:calc(1200px - 0px);">
+    <div class="stat-card fade-up">
+      <div class="stat-label">CO₂ Level (ppm)</div>
+      <div class="stat-value cyan">421.3</div>
+      <div class="stat-change up">↑ +2.4 from last year</div>
+    </div>
+    <div class="stat-card fade-up">
+      <div class="stat-label">Avg Temp Anomaly</div>
+      <div class="stat-value orange">+1.48°C</div>
+      <div class="stat-change down">↑ above pre-industrial</div>
+    </div>
+    <div class="stat-card fade-up">
+      <div class="stat-label">Model Accuracy</div>
+      <div class="stat-value green">94.7%</div>
+      <div class="stat-change up">↑ validated on test set</div>
+    </div>
+    <div class="stat-card fade-up">
+      <div class="stat-label">Predictions Run</div>
+      <div class="stat-value cyan" id="pred-count">1,247</div>
+      <div class="stat-change up">↑ growing</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- LEFT: PREDICTION FORM -->
+    <div class="card form-section" id="predict-form">
+      <div class="card-title">
+        AI Climate Predictor
+        <span><span class="live-dot"></span>MODEL READY</span>
+      </div>
+
+      <div class="form-row">
+        <div class="input-group">
+          <label>Region / City</label>
+          <input type="text" id="region" placeholder="e.g. Lucknow, UP" />
+        </div>
+        <div class="input-group">
+          <label>Year to Predict</label>
+          <input type="number" id="year" placeholder="2030" min="2025" max="2100"/>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="input-group">
+          <label>Current Temp (°C)</label>
+          <input type="number" id="temp" placeholder="32.5" step="0.1"/>
+        </div>
+        <div class="input-group">
+          <label>CO₂ Emissions (MT)</label>
+          <input type="number" id="co2" placeholder="450" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="input-group">
+          <label>Rainfall (mm/yr)</label>
+          <input type="number" id="rain" placeholder="900"/>
+        </div>
+        <div class="input-group">
+          <label>Risk Scenario</label>
+          <select id="scenario">
+            <option value="low">Low Emissions (SSP1)</option>
+            <option value="mid" selected>Moderate (SSP2)</option>
+            <option value="high">High Emissions (SSP5)</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-primary" style="width:100%;margin-top:8px" onclick="runPrediction()">
+        ⚡ Generate AI Prediction
+      </button>
+
+      <div class="loading-bar" id="loader"></div>
+
+      <!-- RESULT -->
+      <div class="result-box" id="result-box">
+        <div class="result-label">Predicted Temperature Anomaly</div>
+        <div class="result-value" id="result-temp">—</div>
+        <div class="result-detail" id="result-detail">—</div>
+        <div id="result-badge"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: SIDEBAR -->
+    <div class="sidebar">
+
+      <!-- Live Metrics -->
+      <div class="card">
+        <div class="card-title">Live Indicators <span>GLOBAL</span></div>
+        <div class="metric-row">
+          <span class="metric-name">Sea Level Rise</span>
+          <span class="metric-val" style="color:var(--accent)">+3.7 mm/yr</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Arctic Ice Loss</span>
+          <span class="metric-val" style="color:var(--accent3)">−13%/decade</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Deforestation</span>
+          <span class="metric-val" style="color:var(--accent3)">4.7M ha/yr</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Renewable Share</span>
+          <span class="metric-val" style="color:var(--accent2)">30.3%</span>
+        </div>
+      </div>
+
+      <!-- Regional Risk -->
+      <div class="card">
+        <div class="card-title">Regional Risk Index</div>
+        <div class="mini-bar-wrap">
+          <div class="mini-bar-row">
+            <span class="mini-bar-label">South Asia</span>
+            <div class="mini-bar-track"><div class="mini-bar-fill" style="width:82%"></div></div>
+            <span class="mini-bar-pct">82%</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-bar-label">Sub-Sahara</span>
+            <div class="mini-bar-track"><div class="mini-bar-fill" style="width:76%"></div></div>
+            <span class="mini-bar-pct">76%</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-bar-label">SE Asia</span>
+            <div class="mini-bar-track"><div class="mini-bar-fill" style="width:69%"></div></div>
+            <span class="mini-bar-pct">69%</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-bar-label">MENA</span>
+            <div class="mini-bar-track"><div class="mini-bar-fill" style="width:61%"></div></div>
+            <span class="mini-bar-pct">61%</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-bar-label">Europe</span>
+            <div class="mini-bar-track"><div class="mini-bar-fill" style="width:38%"></div></div>
+            <span class="mini-bar-pct">38%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Temp Trend mini chart -->
+      <div class="card">
+        <div class="card-title">Temp Trend 1980–2025</div>
+        <div class="chart-area">
+          <svg class="chart-svg" viewBox="0 0 340 120" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Grid lines -->
+            <line x1="0" y1="30"  x2="340" y2="30"  stroke="rgba(0,229,255,0.08)" stroke-width="1"/>
+            <line x1="0" y1="60"  x2="340" y2="60"  stroke="rgba(0,229,255,0.08)" stroke-width="1"/>
+            <line x1="0" y1="90"  x2="340" y2="90"  stroke="rgba(0,229,255,0.08)" stroke-width="1"/>
+            <!-- Area fill -->
+            <path d="M0,95 C30,90 50,88 80,82 C110,76 130,72 160,65 C190,58 210,50 240,42 C270,34 300,26 340,18 L340,120 L0,120 Z"
+                  fill="url(#chartGrad)"/>
+            <!-- Line -->
+            <path d="M0,95 C30,90 50,88 80,82 C110,76 130,72 160,65 C190,58 210,50 240,42 C270,34 300,26 340,18"
+                  fill="none" stroke="#00e5ff" stroke-width="2" stroke-linecap="round"/>
+            <!-- Dot at end -->
+            <circle cx="340" cy="18" r="4" fill="#00e5ff"/>
+            <circle cx="340" cy="18" r="8" fill="rgba(0,229,255,0.2)"/>
+          </svg>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px">
+          <span style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted)">1980</span>
+          <span style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted)">2000</span>
+          <span style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--accent)">2025</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>Built for <span>IIIT Lucknow Gen AI Hackathon 2026</span></p>
+    <p>ClimateAI · <span>Prince Prajapati</span> · RGIPT</p>
+  </footer>
+
+  <script>
+    // Counter animation
+    function animateCount(el, target) {
+      let current = 0;
+      const step = target / 60;
+      const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = Math.floor(current).toLocaleString();
+        if (current >= target) clearInterval(timer);
+      }, 16);
+    }
+    animateCount(document.getElementById('pred-count'), 1247);
+
+    // Prediction logic
+    function runPrediction() {
+      const region   = document.getElementById('region').value   || 'the selected region';
+      const year     = parseInt(document.getElementById('year').value)   || 2040;
+      const temp     = parseFloat(document.getElementById('temp').value) || 32;
+      const co2      = parseFloat(document.getElementById('co2').value)  || 450;
+      const scenario = document.getElementById('scenario').value;
+
+      // Show loader
+      const loader = document.getElementById('loader');
+      loader.classList.add('active');
+
+      setTimeout(() => {
+        loader.classList.remove('active');
+
+        // Simple model simulation
+        const yearFactor = (year - 2025) * 0.035;
+        const co2Factor  = (co2 - 400)  * 0.002;
+        const scenarioMap = { low: 0.6, mid: 1.0, high: 1.6 };
+        const multiplier  = scenarioMap[scenario];
+        const anomaly     = ((yearFactor + co2Factor) * multiplier).toFixed(2);
+
+        // Risk level
+        let riskClass, riskLabel;
+        if      (anomaly < 1.5) { riskClass = 'risk-low';  riskLabel = 'LOW RISK'; }
+        else if (anomaly < 2.5) { riskClass = 'risk-mid';  riskLabel = 'MODERATE RISK'; }
+        else                    { riskClass = 'risk-high'; riskLabel = 'HIGH RISK'; }
+
+        document.getElementById('result-temp').textContent   = `+${anomaly}°C`;
+        document.getElementById('result-detail').textContent =
+          `By ${year}, ${region} is projected to experience a +${anomaly}°C temperature anomaly under the selected emissions scenario. This may impact water availability, agricultural cycles, and urban heat stress.`;
+        document.getElementById('result-badge').innerHTML =
+          `<span class="risk-badge ${riskClass}">${riskLabel}</span>`;
+
+        const box = document.getElementById('result-box');
+        box.classList.add('visible');
+
+        // Increment counter
+        const el  = document.getElementById('pred-count');
+        const cur = parseInt(el.textContent.replace(',','')) + 1;
+        el.textContent = cur.toLocaleString();
+
+      }, 1800);
+    }
+  </script>
+
+</body>
+</html>
